@@ -1,7 +1,7 @@
 {
     "name": "tm-create-new",
     "version": "1.0.0",
-    "description": "Tool for generating configurations for new clients for Topmotive NextApp",
+    "description": "A configuration generation tool for new clients in the Topmotive NextApp platform, streamlining setup processes and automating configurations.",
     "main": "src/index.ts",
     "scripts": {
         "start": "ts-node src/index.ts",

@@ -1,0 +1,88 @@
+{
+    "clientName": "NextWMDK",
+    "env": {
+        "APP_DISPLAY_NAME": "WMKAT+ DK",
+        "APP_VERSION": "0.1.0",
+        "BASE_URL": "https://plus.wmkat.dk/",
+        "AUTH_ID": "xxxx"
+    },
+    "app_secret_android": "",
+    "app_secret_ios": "",
+    "react": {
+        "clientsPath": "clients",
+        "imagesPath": "assets/images/logo_image/",
+        "imageBaseSizes": [
+            32,
+            64,
+            2046
+        ],
+        "imageScales": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "excludedFromScaling": [
+            2046
+        ]
+    },
+    "android": {
+        "targetConfigsPath": "android/clients/",
+        "androidSizes": {
+            "drawable-mdpi": 320,
+            "drawable-hdpi": 480,
+            "drawable-xhdpi": 640,
+            "drawable-xxhdpi": 960,
+            "drawable-xxxhdpi": 1280
+        }
+    },
+    "ios": {
+        "targetConfigsPath": "ios/NextApp/TargetConfigs",
+        "splashScreenBaseImageSizes": [
+            682
+        ],
+        "splashScreenScales": [
+            1,
+            2,
+            3
+        ],
+        "iosImageSizes": [
+            {
+                "size": 20,
+                "scale": 2
+            },
+            {
+                "size": 20,
+                "scale": 3
+            },
+            {
+                "size": 29,
+                "scale": 2
+            },
+            {
+                "size": 29,
+                "scale": 3
+            },
+            {
+                "size": 40,
+                "scale": 2
+            },
+            {
+                "size": 40,
+                "scale": 3
+            },
+            {
+                "size": 60,
+                "scale": 2
+            },
+            {
+                "size": 60,
+                "scale": 3
+            },
+            {
+                "size": 1024,
+                "scale": 1
+            }
+        ]
+    }
+}
