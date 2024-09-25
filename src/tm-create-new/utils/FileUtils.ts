@@ -1,5 +1,4 @@
 import { promises as fs } from 'fs';
-
 import path from 'path';
 
 const BASE_DIRS = [
@@ -91,6 +90,33 @@ export const copyFile = async (src: string, dest: string): Promise<void> => {
         await fs.copyFile(srcPath, destPath, fs.constants.COPYFILE_EXCL);
     } catch (err: any) {
         console.error(`Error copying file: ${err.message}`);
+        throw err;
+    }
+};
+
+// Function to update a file securely
+export const updateFile = async (src: string, dest: string): Promise<void> => {
+    try {
+        const srcPath  = await resolveAndValidatePath(src);
+        const destPath = await resolveAndValidatePath(dest);
+        const srcStats = await fs.lstat(srcPath);
+
+        if (!srcStats.isFile()) {
+            throw new Error('Source is not a file');
+        }
+
+        // Ensure the destination directory exists
+        await fs.mkdir(path.dirname(destPath), { recursive: true, mode: 0o700 });
+
+        // Read the content from the source file
+        const content = await fs.readFile(srcPath, 'utf8');
+
+        // Write the content to the destination file (overwrite existing content)
+        await fs.writeFile(destPath, content, 'utf8');
+
+        console.log(`File updated successfully: ${srcPath} -> ${destPath}`);
+    } catch (err: any) {
+        console.error(`Error updating file: ${err.message}`);
         throw err;
     }
 };
