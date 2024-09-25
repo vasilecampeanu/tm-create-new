@@ -1,17 +1,21 @@
 {
     "name": "tm-create-new",
     "version": "1.0.0",
-    "description": "",
+    "description": "Tool for generating configurations for new clients for Topmotive NextApp",
     "main": "src/index.ts",
     "scripts": {
         "start": "ts-node src/index.ts",
         "build": "esbuild --bundle src/index.ts --platform=node --target=es2020 --outfile=dist/index.js --external:sharp --external:svg2png"
+    },
+    "bin": {
+        "tm-create-new": "./dist/index.js"
     },
     "keywords": [],
     "author": "",
     "license": "UNLICENSED",
     "devDependencies": {
         "@types/node": "^22.7.0",
+        "esbuild": "^0.24.0",
         "ts-node": "^10.9.2",
         "typescript": "^5.6.2"
     }
