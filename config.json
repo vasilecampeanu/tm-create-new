@@ -2,14 +2,14 @@
     "clientName": "NextWMDK",
     "env": {
         "APP_DISPLAY_NAME": "WMKAT+ DK",
-        "APP_VERSION": "0.1.0",
-        "BASE_URL": "https://plus.wmkat.dk/",
-        "AUTH_ID": "xxxx"
+        "APP_VERSION":      "0.1.0",
+        "BASE_URL":         "https://plus.wmkat.dk/",
+        "AUTH_ID":          "xxxx"
     },
     "app_secret_android": "",
-    "app_secret_ios": "",
+    "app_secret_ios":     "",
     "react": {
-        "clientsPath": "clients",
+        "targetConfigsPath": "clients",
         "imagesPath": "assets/images/logo_image/",
         "imageBaseSizes": [
             32,
@@ -29,10 +29,10 @@
     "android": {
         "targetConfigsPath": "android/clients/",
         "androidSizes": {
-            "drawable-mdpi": 320,
-            "drawable-hdpi": 480,
-            "drawable-xhdpi": 640,
-            "drawable-xxhdpi": 960,
+            "drawable-mdpi":    320,
+            "drawable-hdpi":    480,
+            "drawable-xhdpi":   640,
+            "drawable-xxhdpi":  960,
             "drawable-xxxhdpi": 1280
         }
     },
@@ -48,39 +48,39 @@
         ],
         "iosImageSizes": [
             {
-                "size": 20,
+                "size":  20,
                 "scale": 2
             },
             {
-                "size": 20,
+                "size":  20,
                 "scale": 3
             },
             {
-                "size": 29,
+                "size":  29,
                 "scale": 2
             },
             {
-                "size": 29,
+                "size":  29,
                 "scale": 3
             },
             {
-                "size": 40,
+                "size":  40,
                 "scale": 2
             },
             {
-                "size": 40,
+                "size":  40,
                 "scale": 3
             },
             {
-                "size": 60,
+                "size":  60,
                 "scale": 2
             },
             {
-                "size": 60,
+                "size":  60,
                 "scale": 3
             },
             {
-                "size": 1024,
+                "size":  1024,
                 "scale": 1
             }
         ]
