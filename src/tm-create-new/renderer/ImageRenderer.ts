@@ -1,179 +1,184 @@
 import sharp from 'sharp';
-import svg2png from 'svg2png';
-
 import path from 'path';
 import { promises as fs } from 'fs';
 
-import { createDirectory, folderExists } from '../utils/FileUtils';
+import { createDirectory, folderExists, resolveAndValidatePath } from '../utils/FileUtils';
 import { IConfig } from '../../typings/IConfig';
 
 export class ImageRenderer {
-    private sourceSVG: Buffer | null;
+    private sourceSVG: Buffer;
     private config: IConfig;
 
-    private constructor(config: IConfig, svgPath: string) {
-        this.sourceSVG = null;
+    private constructor(config: IConfig, svgBuffer: Buffer) {
+        this.sourceSVG = svgBuffer;
         this.config = config;
     }
 
     public static async create(config: IConfig, svgPath: string): Promise<ImageRenderer> {
-        const instance = new ImageRenderer(config, svgPath);
-        await instance.initialize(svgPath);
-        return instance;
+        const resolvedSvgPath = await resolveAndValidatePath(svgPath);
+        const svgBuffer = await ImageRenderer.readFile(resolvedSvgPath);
+
+        return new ImageRenderer(config, svgBuffer);
     }
 
-    private async initialize(svgPath: string): Promise<void> {
-        this.sourceSVG = await this.readSVGFile(svgPath);
+    private static async readFile(filePath: string): Promise<Buffer> {
+        try {
+            const resolvedPath = await resolveAndValidatePath(filePath);
+            const stats = await fs.lstat(resolvedPath);
+
+            if (!stats.isFile()) {
+                throw new Error(`Path is not a file: ${filePath}`);
+            }
+
+            return await fs.readFile(resolvedPath);
+        } catch (err: any) {
+            console.error(`Error reading file: ${err.message}`);
+            throw err;
+        }
     }
 
-    private async readSVGFile(inputSVGPath: string): Promise<Buffer> {
+    private async convert(
+        size: number,
+        backgroundColorHex?: string,
+        overlayImagePath?: string
+    ): Promise<Buffer> {
         try {
-            await fs.access(inputSVGPath);
-            return await fs.readFile(inputSVGPath);
-        } catch (err) {
-            throw new Error(`File not found at path: ${inputSVGPath}`);
-        }
-    };
-
-    private async readImageFile(inputImagePath: string): Promise<Buffer> {
-        try {
-            await fs.access(inputImagePath);
-            return await fs.readFile(inputImagePath);
-        } catch (err) {
-            throw new Error(`File not found at path: ${inputImagePath}`);
-        }
-    };
-
-    public async convert(size: number, backgroundColorHex?: string, overlayImagePath?: string): Promise<any> {
-        if (!this.sourceSVG) {
-            throw new Error('SVG data not loaded.');
-        }
-
-        try {
-            const buffer = await svg2png(this.sourceSVG);
-            let sharpInstance = sharp(buffer)
+            let image = sharp(this.sourceSVG)
                 .resize(size, size)
                 .png();
 
             if (backgroundColorHex) {
-                sharpInstance = sharpInstance.flatten({ background: backgroundColorHex });
+                image = image.flatten({ background: backgroundColorHex });
             }
 
             if (overlayImagePath) {
-                const overlayBuffer = await this.readImageFile(overlayImagePath);
-                const resizedOverlayBuffer = await sharp(overlayBuffer).resize(size, size).toBuffer();
-                sharpInstance = sharpInstance.composite([{ input: resizedOverlayBuffer, gravity: 'centre' }]);
+                const overlayResolvedPath = await resolveAndValidatePath(overlayImagePath);
+                const overlayBuffer = await ImageRenderer.readFile(overlayResolvedPath);
+                const resizedOverlayBuffer = await sharp(overlayBuffer)
+                    .resize(size, size)
+                    .toBuffer();
+
+                image = image.composite([{ input: resizedOverlayBuffer, gravity: 'centre' }]);
             }
 
-            const outputBuffer = await sharpInstance.toBuffer();
-
-            return outputBuffer;
+            return await image.toBuffer();
         } catch (err: any) {
-            throw new Error('Failed to convert SVG to PNG: ' + err.message);
+            console.error(`Error during image conversion: ${err.message}`);
+            throw err;
         }
     }
 
     public async saveConvertedSVG(
         outputPath: string,
         size: number,
-        backgroundColorHex?: string | undefined,
+        backgroundColorHex?: string,
         overlayImagePath?: string
     ): Promise<void> {
-        if (!(await folderExists(path.dirname(outputPath)))) {
-            createDirectory(path.dirname(outputPath));
-        }
-    
         try {
+            const resolvedOutputPath = await resolveAndValidatePath(outputPath);
+            const outputDir = path.dirname(resolvedOutputPath);
+
+            if (!(await folderExists(outputDir))) {
+                await createDirectory(outputDir);
+            }
+
             const buffer = await this.convert(size, backgroundColorHex, overlayImagePath);
-            await sharp(buffer).toFile(outputPath);
+            await sharp(buffer).toFile(resolvedOutputPath);
         } catch (err: any) {
-            throw new Error(`Failed to save file: ${outputPath}. Error: ${err.message}`);
+            console.error(`Error saving converted SVG: ${err.message}`);
+            throw err;
         }
-    }    
+    }
 
     public async generateImageSet(
         outputPath: string,
         imageBaseSizes: number[],
         imageScales: number[],
         excludedSizes: number[] = [],
-        outputImagePrefix = "logo_image_",
-        includeSizeInFileName: boolean = true
+        outputImagePrefix = 'logo_image_',
+        includeSizeInFileName = true
     ): Promise<void> {
-        if (!(await folderExists(outputPath))) {
-            createDirectory(outputPath);
-        }
+        try {
+            const resolvedOutputPath = await resolveAndValidatePath(outputPath);
 
-        for (let baseSize of imageBaseSizes) {
-            let fileName = outputImagePrefix;
-            if (includeSizeInFileName) {
-                fileName += baseSize;
+            if (!(await folderExists(resolvedOutputPath))) {
+                await createDirectory(resolvedOutputPath);
             }
 
-            const scalesToUse = excludedSizes.includes(baseSize) ? [1] : imageScales;
+            for (const baseSize of imageBaseSizes) {
+                let fileName = outputImagePrefix;
+                if (includeSizeInFileName) {
+                    fileName += baseSize;
+                }
 
-            for (let scale of scalesToUse) {
-                const outputFileName = scale === 1 ? `${fileName}.png` : `${fileName}@${scale}x.png`;
-                const outputFilePath = path.join(outputPath, outputFileName);
+                const scalesToUse = excludedSizes.includes(baseSize) ? [1] : imageScales;
 
-                try {
+                for (const scale of scalesToUse) {
+                    const outputFileName = scale === 1 ? `${fileName}.png` : `${fileName}@${scale}x.png`;
+                    const outputFilePath = path.join(resolvedOutputPath, outputFileName);
+
                     const buffer = await this.convert(baseSize * scale);
                     await sharp(buffer).toFile(outputFilePath);
-                } catch (err: any) {
-                    throw new Error(`Failed to write file: ${outputFileName}. Error: ${err.message}`);
                 }
             }
+        } catch (err: any) {
+            console.error(`Error generating image set: ${err.message}`);
+            throw err;
         }
     }
 
     public async generateIosImageSet(outputPath: string, overlayPath?: string): Promise<void> {
-        if (!(await folderExists(outputPath))) {
-            createDirectory(outputPath);
-        }
+        try {
+            const resolvedOutputPath = await resolveAndValidatePath(outputPath);
 
-        for (let item of this.config.ios.iosImageSizes) {
-            const { size, scale } = item;
-
-            let fileName;
-            if (size === 1024) {
-                fileName = `MarketingIcon1024.png`;
-            } else {
-                fileName = `Icon-${size}@${scale}x.png`;
+            if (!(await folderExists(resolvedOutputPath))) {
+                await createDirectory(resolvedOutputPath);
             }
 
-            const outputFilePath = path.join(outputPath, fileName);
+            for (const item of this.config.ios.iosImageSizes) {
+                const { size, scale } = item;
+                const fileName = size === 1024
+                    ? 'MarketingIcon1024.png'
+                    : `Icon-${size}@${scale}x.png`;
 
-            try {
-                const buffer = await this.convert(size * scale, "#ffffff", overlayPath);
+                const outputFilePath = path.join(resolvedOutputPath, fileName);
+
+                const buffer = await this.convert(size * scale, '#ffffff', overlayPath);
                 await sharp(buffer).toFile(outputFilePath);
-            } catch (err: any) {
-                throw new Error(`Failed to write file: ${fileName}. Error: ${err.message}`);
             }
+        } catch (err: any) {
+            console.error(`Error generating iOS image set: ${err.message}`);
+            throw err;
         }
     }
 
     public async generateAndroidImageSet(
         outputPath: string,
-        splashscreenImageName = 'splashscreen_image.png',
+        splashscreenImageName = 'splashscreen_image.png'
     ): Promise<void> {
-        if (!(await folderExists(outputPath))) {
-            createDirectory(outputPath);
-        }
-    
-        for (const [folder, size] of Object.entries(this.config.android.androidSizes)) {
-            const folderPath = path.join(outputPath, folder);
-            
-            if (!(await folderExists(folderPath))) {
-                createDirectory(folderPath);
+        try {
+            const resolvedOutputPath = await resolveAndValidatePath(outputPath);
+
+            if (!(await folderExists(resolvedOutputPath))) {
+                await createDirectory(resolvedOutputPath);
             }
-            
-            const outputFilePath = path.join(folderPath, splashscreenImageName);
-    
-            try {
+
+            for (const [folder, size] of Object.entries(this.config.android.androidSizes)) {
+                const folderPath = path.join(resolvedOutputPath, folder);
+                const resolvedFolderPath = await resolveAndValidatePath(folderPath);
+
+                if (!(await folderExists(resolvedFolderPath))) {
+                    await createDirectory(resolvedFolderPath);
+                }
+
+                const outputFilePath = path.join(resolvedFolderPath, splashscreenImageName);
+
                 const buffer = await this.convert(size);
                 await sharp(buffer).toFile(outputFilePath);
-            } catch (err: any) {
-                throw new Error(`Failed to write file: ${splashscreenImageName} in ${folder}. Error: ${err.message}`);
             }
+        } catch (err: any) {
+            console.error(`Error generating Android image set: ${err.message}`);
+            throw err;
         }
-    }    
+    }
 }

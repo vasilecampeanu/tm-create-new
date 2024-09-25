@@ -27,30 +27,40 @@ const updateEnvFile = async (config: IConfig, envFilePath: string): Promise<void
 }
 
 export const prepareTargetReactNative = async (config: IConfig): Promise<void> => {
-    const templateSourcePath = path.join(config.react.targetConfigsPath, "__template__");
-    const clientDestinationPath = path.join(config.react.targetConfigsPath, config.clientName.toLocaleLowerCase());
+    try {
+        const templateSourcePath = path.join(config.react.targetConfigsPath, '__template__');
+        const clientDestinationPath = path.join(
+            config.react.targetConfigsPath,
+            config.clientName.toLowerCase()
+        );
 
-    // Duplicate __template__ folder and rename it to client name.
-    await copyFolder(templateSourcePath, clientDestinationPath);
+        // Copy the template folder securely
+        await copyFolder(templateSourcePath, clientDestinationPath);
 
-    // Update .env file variables.
-    const envFilePath = path.join(clientDestinationPath, '.env');
-    await updateEnvFile(config, envFilePath);
+        // Update .env file variables
+        const envFilePath = path.join(clientDestinationPath, '.env');
+        await updateEnvFile(config, envFilePath);
 
-    // Copy of logo_image.svg
-    const svgPath = path.join(`${path.dirname(__dirname)}`, 'logo_image.svg');
-    const fileDestinationPath = path.join(config.react.targetConfigsPath, config.clientName.toLocaleLowerCase(), config.react.imagesPath, 'logo_image.svg');
-    await copyFile(svgPath, fileDestinationPath);
+        // Copy logo_image.svg securely
+        const svgPath = path.join(path.dirname(__dirname), 'assets', 'logo_image.svg');
+        const fileDestinationPath = path.join(
+            clientDestinationPath,
+            config.react.imagesPath,
+            'logo_image.svg'
+        );
+        await copyFile(svgPath, fileDestinationPath);
 
-    // Generate image set fro react client
-    ImageRenderer.create(config, svgPath).then(imageRenderer => {
-        imageRenderer.generateImageSet(
-            path.join(config.react.targetConfigsPath, config.clientName.toLocaleLowerCase(), config.react.imagesPath),
+        // Generate image set for React client
+        const imageRenderer = await ImageRenderer.create(config, svgPath);
+
+        await imageRenderer.generateImageSet(
+            path.join(clientDestinationPath, config.react.imagesPath),
             config.react.imageBaseSizes,
             config.react.imageScales,
             config.react.excludedFromScaling
         );
-    }).catch(err => {
-        console.error(err);
-    });
-}
+    } catch (err: any) {
+        console.error(`Error preparing React Native target: ${err.message}`);
+        throw err;
+    }
+};

@@ -1,13 +1,24 @@
 import { promises as fs } from 'fs';
+
 import path from 'path';
 
-const BASE_DIR = '/Users/vasilecampeanu/Work/Projects/NextApp';
+const BASE_DIRS = [
+    '/Users/vasilecampeanu/Work/Projects/NextApp',
+    '/Users/vasilecampeanu/Work/Projects/tm-create-new/'
+];
 
 // Utility function to resolve and validate paths
-const resolveAndValidatePath = async (inputPath: string): Promise<string> => {
-    const resolvedPath = path.resolve(BASE_DIR, inputPath);
+export const resolveAndValidatePath = async (inputPath: string): Promise<string> => {
+    const resolvedPath = path.resolve(inputPath);
 
-    if (!resolvedPath.startsWith(BASE_DIR + path.sep)) {
+    console.log("resolved path:", resolvedPath);
+
+    const isWithinBaseDir = BASE_DIRS.some(baseDir => {
+        const relative = path.relative(baseDir, resolvedPath);
+        return !relative.startsWith('..') && !path.isAbsolute(relative);
+    });
+
+    if (!isWithinBaseDir) {
         throw new Error('Access denied: Path traversal detected');
     }
 

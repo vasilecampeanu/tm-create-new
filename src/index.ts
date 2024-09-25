@@ -8,6 +8,7 @@ import { prepareTargetReactNative } from "./tm-create-new/targets/PrepareTarget.
 (async () => {
     const config: IConfig = await readConfig(path.join(path.dirname(__dirname), 'config.json'));
 
+    // TODO:
     // Prepare configs for each target
     await prepareTargetReactNative(config);
 })();

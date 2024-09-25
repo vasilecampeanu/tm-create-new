@@ -1,9 +1,9 @@
 {
-    "clientName": "NextWMDK",
+    "clientName": "NextTest",
     "env": {
-        "APP_DISPLAY_NAME": "WMKAT+ DK",
+        "APP_DISPLAY_NAME": "NextApp+ Test",
         "APP_VERSION":      "0.1.0",
-        "BASE_URL":         "https://plus.wmkat.dk/",
+        "BASE_URL":         "https://tm2.carparts-cat.com",
         "AUTH_ID":          "xxxx"
     },
     "app_secret_android": "",
