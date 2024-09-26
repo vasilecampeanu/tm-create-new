@@ -1,27 +1,9 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 
-const BASE_DIRS = [
-    '/Users/vasilecampeanu/Work/Projects/NextApp',
-    '/Users/vasilecampeanu/Work/Projects/tm-create-new/'
-];
-
-// Utility function to resolve and validate paths
+// Utility function to resolve paths
 export const resolveAndValidatePath = async (inputPath: string): Promise<string> => {
-    const resolvedPath = path.resolve(inputPath);
-
-    console.log("resolved path:", resolvedPath);
-
-    const isWithinBaseDir = BASE_DIRS.some(baseDir => {
-        const relative = path.relative(baseDir, resolvedPath);
-        return !relative.startsWith('..') && !path.isAbsolute(relative);
-    });
-
-    if (!isWithinBaseDir) {
-        throw new Error('Access denied: Path traversal detected');
-    }
-
-    return resolvedPath;
+    return path.resolve(inputPath);
 };
 
 // Function to check if a folder exists securely
@@ -87,7 +69,7 @@ export const copyFile = async (src: string, dest: string): Promise<void> => {
         }
 
         await fs.mkdir(path.dirname(destPath), { recursive: true, mode: 0o700 });
-        await fs.copyFile(srcPath, destPath, fs.constants.COPYFILE_EXCL);
+        await fs.copyFile(srcPath, destPath);
     } catch (err: any) {
         console.error(`Error copying file: ${err.message}`);
         throw err;

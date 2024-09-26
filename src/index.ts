@@ -13,8 +13,10 @@ const isUpdateClient = args.includes('--update-client');
     const config: IConfig = await readConfig(path.join(path.dirname(__dirname), 'config.json'));
 
     if (isUpdateClient) {
+        console.log(`Updating existing client: ${config.clientName}`);
         await updateTargetReactNative(config);
     } else {
+        console.log(`Preparing new client: ${config.clientName}`);
         await prepareTargetReactNative(config);
     }
 })();

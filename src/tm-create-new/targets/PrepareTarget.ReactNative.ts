@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs';
-import path from 'path'
+import path from 'path';
 import { IConfig } from '../../typings/IConfig';
 import { copyFile, copyFolder, folderExists, updateFile } from '../utils/FileUtils';
 import { ImageRenderer } from '../renderer/ImageRenderer';
@@ -7,13 +7,12 @@ import { ImageRenderer } from '../renderer/ImageRenderer';
 const updateEnvFile = async (config: IConfig, envFilePath: string): Promise<void> => {
     try {
         let content = await fs.readFile(envFilePath, 'utf8');
-        
         const envConfigEntries = Object.entries(config.env);
-        
+
         for (const line of content.split('\n')) {
             const [key] = line.split('=');
             const correspondingEntry = envConfigEntries.find(([configKey]) => configKey === key);
-            
+
             if (correspondingEntry) {
                 const [, value] = correspondingEntry;
                 content = content.replace(line, `${key}="${value}"`);
@@ -24,7 +23,7 @@ const updateEnvFile = async (config: IConfig, envFilePath: string): Promise<void
     } catch (err) {
         console.error(`An error occurred while updating the env file. Error: ${err}`);
     }
-}
+};
 
 export const prepareTargetReactNative = async (config: IConfig): Promise<void> => {
     try {
@@ -33,6 +32,13 @@ export const prepareTargetReactNative = async (config: IConfig): Promise<void> =
             config.react.targetConfigsPath,
             config.clientName.toLowerCase()
         );
+
+        // Check if client already exists
+        const clientExists = await folderExists(clientDestinationPath);
+
+        if (clientExists) {
+            throw new Error(`Client "${config.clientName}" already exists.`);
+        }
 
         // Copy the template folder securely
         await copyFolder(templateSourcePath, clientDestinationPath);
@@ -48,6 +54,7 @@ export const prepareTargetReactNative = async (config: IConfig): Promise<void> =
             config.react.imagesPath,
             'logo_image.svg'
         );
+
         await copyFile(svgPath, fileDestinationPath);
 
         // Generate image set for React client
@@ -60,12 +67,10 @@ export const prepareTargetReactNative = async (config: IConfig): Promise<void> =
             config.react.excludedFromScaling
         );
     } catch (err: any) {
-        console.error(`Error preparing React Native target: ${err.message}`);
         throw err;
     }
 };
 
-// New function to update images for an existing client
 export const updateTargetReactNative = async (config: IConfig): Promise<void> => {
     try {
         const clientDestinationPath = path.join(
@@ -79,6 +84,7 @@ export const updateTargetReactNative = async (config: IConfig): Promise<void> =>
         if (!clientExists) {
             throw new Error(`Client "${config.clientName}" does not exist.`);
         }
+
 
         // Update logo_image.svg
         const svgPath = path.join(path.dirname(__dirname), 'assets', 'logo_image.svg');
@@ -99,9 +105,7 @@ export const updateTargetReactNative = async (config: IConfig): Promise<void> =>
             config.react.excludedFromScaling
         );
 
-        console.log(`Images for client "${config.clientName}" have been updated.`);
     } catch (err: any) {
-        console.error(`Error updating React Native target: ${err.message}`);
         throw err;
     }
 };
