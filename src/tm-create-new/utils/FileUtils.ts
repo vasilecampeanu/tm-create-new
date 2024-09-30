@@ -27,6 +27,7 @@ export const createDirectory = async (dirPath: string): Promise<void> => {
     try {
         const resolvedPath = await resolveAndValidatePath(dirPath);
         await fs.mkdir(resolvedPath, { recursive: true, mode: 0o700 });
+        console.log(`Created directory: ${resolvedPath}`);
     } catch (err: any) {
         console.error(`Error creating directory: ${err.message}`);
         throw err;
@@ -51,6 +52,7 @@ export const copyFolder = async (src: string, dest: string): Promise<void> => {
             preserveTimestamps: true,
             verbatimSymlinks: false,
         });
+        console.log(`Copied folder: ${srcPath} -> ${destPath}`);
     } catch (err: any) {
         console.error(`Error copying folder: ${err.message}`);
         throw err;
@@ -70,6 +72,7 @@ export const copyFile = async (src: string, dest: string): Promise<void> => {
 
         await fs.mkdir(path.dirname(destPath), { recursive: true, mode: 0o700 });
         await fs.copyFile(srcPath, destPath);
+        console.log(`Copied file: ${srcPath} -> ${destPath}`);
     } catch (err: any) {
         console.error(`Error copying file: ${err.message}`);
         throw err;
@@ -96,7 +99,7 @@ export const updateFile = async (src: string, dest: string): Promise<void> => {
         // Write the content to the destination file (overwrite existing content)
         await fs.writeFile(destPath, content, 'utf8');
 
-        console.log(`File updated successfully: ${srcPath} -> ${destPath}`);
+        console.log(`Updated file: ${srcPath} -> ${destPath}`);
     } catch (err: any) {
         console.error(`Error updating file: ${err.message}`);
         throw err;
@@ -115,6 +118,7 @@ export const renameFolder = async (oldDirPath: string, newDirPath: string): Prom
         }
 
         await fs.rename(oldPath, newPath);
+        console.log(`Renamed folder: ${oldPath} -> ${newPath}`);
     } catch (err: any) {
         console.error(`Error renaming folder: ${err.message}`);
         throw err;
@@ -134,6 +138,7 @@ export const renameFile = async (oldFilePath: string, newFilePath: string): Prom
 
         await fs.mkdir(path.dirname(newPath), { recursive: true, mode: 0o700 });
         await fs.rename(oldPath, newPath);
+        console.log(`Renamed file: ${oldPath} -> ${newPath}`);
     } catch (err: any) {
         console.error(`Error renaming file: ${err.message}`);
         throw err;

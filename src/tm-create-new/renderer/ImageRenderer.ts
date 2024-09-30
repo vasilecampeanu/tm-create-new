@@ -1,9 +1,8 @@
-import sharp from 'sharp';
-import path from 'path';
 import { promises as fs } from 'fs';
-
-import { createDirectory, folderExists, resolveAndValidatePath } from '../utils/FileUtils';
+import path from 'path';
+import sharp from 'sharp';
 import { IConfig } from '../../typings/IConfig';
+import { createDirectory, folderExists, resolveAndValidatePath } from '../utils/FileUtils';
 
 export class ImageRenderer {
     private sourceSVG: Buffer;
@@ -84,6 +83,7 @@ export class ImageRenderer {
 
             const buffer = await this.convert(size, backgroundColorHex, overlayImagePath);
             await sharp(buffer).toFile(resolvedOutputPath);
+            console.log(`Saved converted SVG: ${resolvedOutputPath}`);
         } catch (err: any) {
             console.error(`Error saving converted SVG: ${err.message}`);
             throw err;
@@ -119,6 +119,7 @@ export class ImageRenderer {
 
                     const buffer = await this.convert(baseSize * scale);
                     await sharp(buffer).toFile(outputFilePath);
+                    console.log(`Generated image: ${outputFilePath}`);
                 }
             }
         } catch (err: any) {
@@ -145,6 +146,7 @@ export class ImageRenderer {
 
                 const buffer = await this.convert(size * scale, '#ffffff', overlayPath);
                 await sharp(buffer).toFile(outputFilePath);
+                console.log(`Generated iOS image: ${outputFilePath}`);
             }
         } catch (err: any) {
             console.error(`Error generating iOS image set: ${err.message}`);
@@ -175,6 +177,7 @@ export class ImageRenderer {
 
                 const buffer = await this.convert(size);
                 await sharp(buffer).toFile(outputFilePath);
+                console.log(`Generated Android image: ${outputFilePath}`);
             }
         } catch (err: any) {
             console.error(`Error generating Android image set: ${err.message}`);
