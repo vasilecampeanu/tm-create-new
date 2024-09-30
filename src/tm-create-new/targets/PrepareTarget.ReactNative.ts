@@ -31,6 +31,7 @@ const updateEnvFile = async (config: IConfig, envFilePath: string): Promise<void
 export const prepareTargetReactNative = async (config: IConfig): Promise<void> => {
     try {
         const templateSourcePath = path.join(config.react.targetConfigsPath, '__template__');
+
         const clientDestinationPath = path.join(
             config.react.targetConfigsPath,
             config.clientName.toLowerCase()
