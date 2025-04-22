@@ -1,10 +1,10 @@
 {
-    "clientName": "NextTest",
+    "clientName": "NextTechCo",
     "env": {
-        "APP_DISPLAY_NAME": "NextApp Test",
+        "APP_DISPLAY_NAME": "TECH-CAT",
         "APP_VERSION":      "0.0.1",
-        "BASE_URL":         "https://tm2.carparts-cat.com",
-        "AUTH_ID":          "xxxx"
+        "BASE_URL":         "https://tm1.carparts-cat.com",
+        "AUTH_ID":          "8is0"
     },
     "app_secret_android": "",
     "app_secret_ios":     "",

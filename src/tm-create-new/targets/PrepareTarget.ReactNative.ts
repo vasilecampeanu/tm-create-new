@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { IConfig } from '../../typings/IConfig';
@@ -21,9 +22,11 @@ const updateEnvFile = async (config: IConfig, envFilePath: string): Promise<void
 
         await fs.writeFile(envFilePath, content, 'utf8');
 
-        console.log(`Updated .env file at: ${envFilePath} with the following configuration: \n${content}`);
-    } catch (err) {
-        console.error(`An error occurred while updating the env file. Error: ${err}`);
+        console.log(
+            chalk.green(`✔ Updated .env file at: ${envFilePath} with the following configuration:\n${content}`)
+        );
+    } catch (err: any) {
+        console.error(chalk.red(`An error occurred while updating the env file: ${err.message}`));
         throw err;
     }
 };
@@ -41,14 +44,20 @@ export const prepareTargetReactNative = async (config: IConfig): Promise<void> =
         const clientExists = await folderExists(clientDestinationPath);
 
         if (clientExists) {
-            throw new Error(`Client "${config.clientName}" already exists at ${clientDestinationPath}.`);
+            throw new Error(
+                `Client "${config.clientName}" already exists at ${clientDestinationPath}.`
+            );
         }
 
+        console.log(chalk.greenBright(`\n=== Preparing React Native target for ${config.clientName} ===`));
+
         // Copy the template folder securely
+        console.log(chalk.blue(`\nCopying template folder to ${clientDestinationPath}`));
         await copyFolder(templateSourcePath, clientDestinationPath);
 
         // Update .env file variables
         const envFilePath = path.join(clientDestinationPath, '.env');
+        console.log(chalk.blue(`\nUpdating .env file at ${envFilePath}`));
         await updateEnvFile(config, envFilePath);
 
         // Copy logo_image.svg securely
@@ -59,12 +68,13 @@ export const prepareTargetReactNative = async (config: IConfig): Promise<void> =
             'logo_image.svg'
         );
 
+        console.log(chalk.blue(`\nCopying logo_image.svg to ${fileDestinationPath}`));
         await copyFile(svgPath, fileDestinationPath);
 
         // Generate image set for React client
         const imageRenderer = await ImageRenderer.create(config, svgPath);
 
-        console.log("Generate image assets for react-native target:");
+        console.log(chalk.greenBright('\n=== Generating React Native image assets ==='));
 
         await imageRenderer.generateImageSet(
             path.join(clientDestinationPath, config.react.imagesPath),
@@ -72,8 +82,12 @@ export const prepareTargetReactNative = async (config: IConfig): Promise<void> =
             config.react.imageScales,
             config.react.excludedFromScaling
         );
+
+        console.log(
+            chalk.bgGreen.black(`\n✔ React Native target prepared successfully for ${config.clientName}`)
+        );
     } catch (err: any) {
-        console.error(`Error in prepareTargetReactNative: ${err.message}`);
+        console.error(chalk.red(`Error in prepareTargetReactNative: ${err.message}`));
         throw err;
     }
 };
@@ -91,6 +105,8 @@ export const updateTargetReactNative = async (config: IConfig): Promise<void> =>
         if (!clientExists) {
             throw new Error(`Client "${config.clientName}" does not exist.`);
         }
+
+        console.log(chalk.greenBright(`\n=== Updating React Native image assets for ${config.clientName} ===`));
 
         // Update logo_image.svg
         const svgPath = path.join(path.dirname(__dirname), 'assets', 'logo_image.svg');
@@ -111,8 +127,11 @@ export const updateTargetReactNative = async (config: IConfig): Promise<void> =>
             config.react.excludedFromScaling
         );
 
+        console.log(
+            chalk.bgGreen.black(`\n✔ React Native image assets updated successfully for ${config.clientName}`)
+        );
     } catch (err: any) {
-        console.error(`Error in updateTargetReactNative: ${err.message}`);
+        console.error(chalk.red(`Error in updateTargetReactNative: ${err.message}`));
         throw err;
     }
 };

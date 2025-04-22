@@ -1,8 +1,13 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import sharp from 'sharp';
-import { IConfig } from '../../typings/IConfig';
-import { createDirectory, folderExists, resolveAndValidatePath } from '../utils/FileUtils';
+import chalk from "chalk";
+import { promises as fs } from "fs";
+import path from "path";
+import sharp from "sharp";
+import { IConfig } from "../../typings/IConfig";
+import {
+    createDirectory,
+    folderExists,
+    resolveAndValidatePath,
+} from "../utils/FileUtils";
 
 export class ImageRenderer {
     private sourceSVG: Buffer;
@@ -13,7 +18,10 @@ export class ImageRenderer {
         this.config = config;
     }
 
-    public static async create(config: IConfig, svgPath: string): Promise<ImageRenderer> {
+    public static async create(
+        config: IConfig,
+        svgPath: string
+    ): Promise<ImageRenderer> {
         const resolvedSvgPath = await resolveAndValidatePath(svgPath);
         const svgBuffer = await ImageRenderer.readFile(resolvedSvgPath);
 
@@ -31,7 +39,7 @@ export class ImageRenderer {
 
             return await fs.readFile(resolvedPath);
         } catch (err: any) {
-            console.error(`Error reading file: ${err.message}`);
+            console.error(chalk.red(`Error reading file: ${err.message}`));
             throw err;
         }
     }
@@ -42,27 +50,33 @@ export class ImageRenderer {
         overlayImagePath?: string
     ): Promise<Buffer> {
         try {
-            let image = sharp(this.sourceSVG)
-                .resize(size, size)
-                .png();
+            let image = sharp(this.sourceSVG).resize(size, size).png();
 
             if (backgroundColorHex) {
                 image = image.flatten({ background: backgroundColorHex });
             }
 
             if (overlayImagePath) {
-                const overlayResolvedPath = await resolveAndValidatePath(overlayImagePath);
-                const overlayBuffer = await ImageRenderer.readFile(overlayResolvedPath);
+                const overlayResolvedPath = await resolveAndValidatePath(
+                    overlayImagePath
+                );
+                const overlayBuffer = await ImageRenderer.readFile(
+                    overlayResolvedPath
+                );
                 const resizedOverlayBuffer = await sharp(overlayBuffer)
                     .resize(size, size)
                     .toBuffer();
 
-                image = image.composite([{ input: resizedOverlayBuffer, gravity: 'centre' }]);
+                image = image.composite([
+                    { input: resizedOverlayBuffer, gravity: "centre" },
+                ]);
             }
 
             return await image.toBuffer();
         } catch (err: any) {
-            console.error(`Error during image conversion: ${err.message}`);
+            console.error(
+                chalk.red(`Error during image conversion: ${err.message}`)
+            );
             throw err;
         }
     }
@@ -81,11 +95,19 @@ export class ImageRenderer {
                 await createDirectory(outputDir);
             }
 
-            const buffer = await this.convert(size, backgroundColorHex, overlayImagePath);
+            const buffer = await this.convert(
+                size,
+                backgroundColorHex,
+                overlayImagePath
+            );
             await sharp(buffer).toFile(resolvedOutputPath);
-            console.log(`Saved converted SVG: ${resolvedOutputPath}`);
+            console.log(
+                chalk.greenBright(`✔ Saved converted SVG: ${resolvedOutputPath}`)
+            );
         } catch (err: any) {
-            console.error(`Error saving converted SVG: ${err.message}`);
+            console.error(
+                chalk.red(`Error saving converted SVG: ${err.message}`)
+            );
             throw err;
         }
     }
@@ -95,7 +117,7 @@ export class ImageRenderer {
         imageBaseSizes: number[],
         imageScales: number[],
         excludedSizes: number[] = [],
-        outputImagePrefix = 'logo_image_',
+        outputImagePrefix = "logo_image_",
         includeSizeInFileName = true
     ): Promise<void> {
         try {
@@ -111,24 +133,32 @@ export class ImageRenderer {
                     fileName += baseSize;
                 }
 
-                const scalesToUse = excludedSizes.includes(baseSize) ? [1] : imageScales;
+                const scalesToUse = excludedSizes.includes(baseSize)
+                    ? [1]
+                    : imageScales;
 
                 for (const scale of scalesToUse) {
-                    const outputFileName = scale === 1 ? `${fileName}.png` : `${fileName}@${scale}x.png`;
+                    const outputFileName =
+                        scale === 1 ? `${fileName}.png` : `${fileName}@${scale}x.png`;
                     const outputFilePath = path.join(resolvedOutputPath, outputFileName);
 
                     const buffer = await this.convert(baseSize * scale);
                     await sharp(buffer).toFile(outputFilePath);
-                    console.log(`Generated image: ${outputFilePath}`);
+                    console.log(chalk.green(`✔ Generated image: ${outputFilePath}`));
                 }
             }
         } catch (err: any) {
-            console.error(`Error generating image set: ${err.message}`);
+            console.error(
+                chalk.red(`Error generating image set: ${err.message}`)
+            );
             throw err;
         }
     }
 
-    public async generateIosImageSet(outputPath: string, overlayPath?: string): Promise<void> {
+    public async generateIosImageSet(
+        outputPath: string,
+        overlayPath?: string
+    ): Promise<void> {
         try {
             const resolvedOutputPath = await resolveAndValidatePath(outputPath);
 
@@ -138,25 +168,32 @@ export class ImageRenderer {
 
             for (const item of this.config.ios.iosImageSizes) {
                 const { size, scale } = item;
-                const fileName = size === 1024
-                    ? 'MarketingIcon1024.png'
-                    : `Icon-${size}@${scale}x.png`;
+                const fileName =
+                    size === 1024
+                        ? "MarketingIcon1024.png"
+                        : `Icon-${size}@${scale}x.png`;
 
                 const outputFilePath = path.join(resolvedOutputPath, fileName);
 
-                const buffer = await this.convert(size * scale, '#ffffff', overlayPath);
+                const buffer = await this.convert(
+                    size * scale,
+                    "#ffffff",
+                    overlayPath
+                );
                 await sharp(buffer).toFile(outputFilePath);
-                console.log(`Generated iOS image: ${outputFilePath}`);
+                console.log(chalk.green(`✔ Generated iOS image: ${outputFilePath}`));
             }
         } catch (err: any) {
-            console.error(`Error generating iOS image set: ${err.message}`);
+            console.error(
+                chalk.red(`Error generating iOS image set: ${err.message}`)
+            );
             throw err;
         }
     }
 
     public async generateAndroidImageSet(
         outputPath: string,
-        splashscreenImageName = 'splashscreen_image.png'
+        splashscreenImageName = "splashscreen_image.png"
     ): Promise<void> {
         try {
             const resolvedOutputPath = await resolveAndValidatePath(outputPath);
@@ -165,7 +202,9 @@ export class ImageRenderer {
                 await createDirectory(resolvedOutputPath);
             }
 
-            for (const [folder, size] of Object.entries(this.config.android.androidSizes)) {
+            for (const [folder, size] of Object.entries(
+                this.config.android.androidSizes
+            )) {
                 const folderPath = path.join(resolvedOutputPath, folder);
                 const resolvedFolderPath = await resolveAndValidatePath(folderPath);
 
@@ -173,14 +212,21 @@ export class ImageRenderer {
                     await createDirectory(resolvedFolderPath);
                 }
 
-                const outputFilePath = path.join(resolvedFolderPath, splashscreenImageName);
+                const outputFilePath = path.join(
+                    resolvedFolderPath,
+                    splashscreenImageName
+                );
 
                 const buffer = await this.convert(size);
                 await sharp(buffer).toFile(outputFilePath);
-                console.log(`Generated Android image: ${outputFilePath}`);
+                console.log(
+                    chalk.green(`✔ Generated Android image: ${outputFilePath}`)
+                );
             }
         } catch (err: any) {
-            console.error(`Error generating Android image set: ${err.message}`);
+            console.error(
+                chalk.red(`Error generating Android image set: ${err.message}`)
+            );
             throw err;
         }
     }

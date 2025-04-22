@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fafafb;
+      }
+
+      .cls-2 {
+        fill: #ffffff;
+      }
+    </style>
+  </defs>
+  <!-- Generator: Adobe Illustrator 28.8.0, SVG Export Plug-In . SVG Version: 1.2.0 Build 7)  -->
+  <g>
+    <g id="Ebene_1">
+      <rect class="cls-2" width="240" height="240" rx="57.52" ry="57.52"/>
+      <g id="icon_x5F_stier_x5F_CMYK">
+        <g>
+          <path class="cls-1" d="M129.71,131.95l-13.5-12.39H50v58.68h36.62v-39.71c0-1.88,1.52-3.43,3.38-3.43h.43c1.86,0,3.38,1.54,3.38,3.43v39.71h35.9v-46.29Z"/>
+          <path class="cls-1" d="M102.63,85.4c0-1.02.81-1.84,1.81-1.84h4.68s0-20.8,0-20.8h-6.91l-8.42,7.77v30.06l8.42,7.8h11.14v-21.16h-8.92c-1,0-1.81-.82-1.81-1.84"/>
+          <path class="cls-1" d="M181.17,85.4c0-1.02-.81-1.84-1.81-1.84h-4.68s0-20.8,0-20.8h6.91l8.42,7.77v30.06l-8.42,7.8h-11.14v-21.16h8.92c1,0,1.81-.82,1.81-1.84"/>
+          <polygon class="cls-1" points="164.9 114.22 147.66 130.01 136.18 130.01 118.94 114.22 118.93 87.24 164.89 87.24 164.9 114.22"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

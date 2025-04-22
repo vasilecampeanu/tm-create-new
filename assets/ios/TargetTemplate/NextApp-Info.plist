@@ -2,10 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need access to your photo library to save downloaded files.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Used for scanning barcodes and registration documents</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Used for selecting barcodes and registration documents for scaning</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>We need access to your documents to allow you to select files.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
